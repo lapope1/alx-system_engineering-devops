@@ -1,2 +1,6 @@
 #!/bin/bash
+<<<<<<< HEAD
 chmod ugu+x hello
+=======
+why?
+>>>>>>> 85ee6057fe77143f45a09dfed3a975925417474c
