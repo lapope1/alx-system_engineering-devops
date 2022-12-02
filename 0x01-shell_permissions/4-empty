@@ -1,2 +1,6 @@
 #!/bin/bash
+<<<<<<< HEAD
 touch hello
+=======
+why?
+>>>>>>> aa62403bc8c6ecba1338200b0439904be0ebdba5
