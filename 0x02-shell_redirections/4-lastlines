@@ -1,2 +1,5 @@
 #!/bin/bash
+<<<<<<< HEAD
 tail -n 10 /etc/passwd
+=======
+>>>>>>> 6fff154790d0bf49a47d06401d6622ac8aaa668c
