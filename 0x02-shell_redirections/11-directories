@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 #!/bin/bash
 find . -type d -not -name '.' | wc -l
-=======
-
->>>>>>> fe2d68dbc49eccb36cceb6ae2a5def1d70951b21
