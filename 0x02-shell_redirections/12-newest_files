@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 #!/bin/bash
 head -n 10 /etc/passwd
-=======
-
->>>>>>> 61d61f03a491900c95c0dabbfd9971eeb3a871f4
