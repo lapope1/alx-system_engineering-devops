@@ -1,2 +1,6 @@
 #!/bin/bash
+<<<<<<< HEAD
 mkdir -m 751 dir_alx
+=======
+why?
+>>>>>>> 2461afeabd393b6d0eec384eba8ff0fa488e71b3
