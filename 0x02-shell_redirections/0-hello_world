@@ -1,2 +1,2 @@
 #!/bib/bash
-why?
+echo "hello, world"
