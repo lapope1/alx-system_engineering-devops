@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 #!/bin/bash
 cut -d ':' -f 1,6 /etc/passwd
+=======
+
+>>>>>>> 222b7be50f9527049a1c5cfce04bf1a8f5421d9b
