@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 #!/bin/bash
 tr "A" "Z" | tr "c" "e"
+=======
+
+>>>>>>> b84a1ec4d9911efecc91d848708f8e8bf583cf8d
