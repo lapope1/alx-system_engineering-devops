@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 #!/bin/bash
 grep -i "^[a-z]" /etc/ssh/sshd_config
+=======
+
+>>>>>>> 4c56636f8858ae0274c27f84f595d879d256b7db
