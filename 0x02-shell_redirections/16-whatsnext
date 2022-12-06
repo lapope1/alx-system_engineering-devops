@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 #!/bin/bash
 grep -i "root" -A 3 /etc/passwd
+=======
+
+>>>>>>> dfa7924badcaf24e591abada5d2aa8773f577241
