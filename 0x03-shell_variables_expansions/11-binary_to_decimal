@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 #!/bin/bash
 echo $((2#BINARY))
-=======
-
->>>>>>> d432a0372f72e3f9a4e41fb19c1ee79ff3350ac7
