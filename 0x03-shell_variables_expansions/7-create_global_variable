@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 #!/bin/bash
 echo $((2#$BEST SCHOOL))
-=======
-
->>>>>>> c98302363e2e5a21291da7c3ef690cbe1176492d
