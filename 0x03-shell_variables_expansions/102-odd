@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 #!/bin/bash
 perl -lne 'print if $. % 2 --1'
-=======
-
->>>>>>> 6613717b3e21924b911b8ee9670733d7ca07e1ef
