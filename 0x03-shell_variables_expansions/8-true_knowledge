@@ -1,6 +1,2 @@
-<<<<<<< HEAD
 #!/bin/bash
 echo $(($TRUEKNOWLEDGE + 128))
-=======
-
->>>>>>> cafdc4b730541fdfc6a8490b836fb67d74ec758e
