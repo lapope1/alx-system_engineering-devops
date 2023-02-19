@@ -1,6 +1,2 @@
 #!/bin/bash
-<<<<<<< HEAD
-chmod ugo+x
-=======
-why?
->>>>>>> 2461afeabd393b6d0eec384eba8ff0fa488e71b3
+chmod -R ugo+X .
