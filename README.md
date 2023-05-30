@@ -1,1 +1,1 @@
-# shall script project
+# Shell script project
