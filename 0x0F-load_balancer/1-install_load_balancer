@@ -1,57 +1,134 @@
 #!/usr/bin/env bash
 # Script to install and configure HAProxy Load balancer
 
-# Check if running as root user
-if [[ $EUID -ne 0 ]]; then
-    echo "Please run this script as root or using sudo."
-    exit 1
-fi
+# Update the system
+sudo apt update
+sudo apt upgrade -y
 
-# Check if HAProxy is not installed
-if ! dpkg -s haproxy &> /dev/null; then
-    # Install HAProxy
-    apt-get update
-    apt-get install -y haproxy
-fi
+# Install HAProxy
+sudo apt install -y haproxy
 
-CONFIG_FILE="/etc/haproxy/haproxy.cfg"
-BACKUP_FILE="/etc/haproxy/haproxy.cfg.bak"
+# Configure HAProxy
+cat << EOF | sudo tee /etc/haproxy/haproxy.cfg
+global
+    maxconn 4096
 
-# Check if haproxy.cfg exists
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "Configuration file $CONFIG_FILE does not exist. Skipping backup..."
-else
-    # Backup haproxy.cfg file if it doesn't already exist
-    if [[ ! -f "$BACKUP_FILE" ]]; then
-        cp "$CONFIG_FILE" "$BACKUP_FILE"
-        echo "Backup created: $BACKUP_FILE"
-    else
-        echo "Backup already exists: $BACKUP_FILE"
-    fi
-fi
+defaults
+    mode http
+    timeout connect 5s
+    timeout client 50s
+    timeout server 50s
 
-# Append configuration to haproxy.cfg
-read -r -d '' PROXIES <<EOF
-frontend 191941-web
+frontend http_front
     bind *:80
-    default_backend 202812-web_servers
-    option forwardfor
+    default_backend http_back
 
-backend 191941-web_servers
+backend http_back
     balance roundrobin
     server web-01 3.86.7.18:80 check
     server web-02 34.207.190.90:80 check
-
 EOF
 
-# Check if the configuration already exists in the file
-if grep -q "frontend 191941-web" "$CONFIG_FILE" && grep -q "backend 191941-web_servers" "$CONFIG_FILE"; then
-    echo "Configuration already exists in $CONFIG_FILE. Skipping..."
-else
-    # Append the PROXIES variable to the haproxy.cfg file
-	{ echo; echo "$PROXIES"; } | sudo tee -a "$CONFIG_FILE" >/dev/null
-    echo "Configuration appended to $CONFIG_FILE."
-fi
+# Replace 'web-01-ip' and 'web-02-ip' with the actual IP addresses of web-01 and web-02
 
-# Restart HAProxy Load balancer
-service haproxy restart
+# Create an init script for HAProxy
+cat << 'EOF' | sudo tee /etc/init.d/haproxy
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          haproxy
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: HAProxy init script
+# Description:       HAProxy is a TCP/HTTP reverse proxy which is particularly suited for high availability environments.
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/haproxy
+CONFIG=/etc/haproxy/haproxy.cfg
+PIDFILE=/var/run/haproxy.pid
+
+# Additional options that are passed to the Daemon.
+EXTRAOPTS=""
+
+test -x $DAEMON || exit 0
+
+[ -f /etc/default/haproxy ] && . /etc/default/haproxy
+
+. /lib/lsb/init-functions
+
+haproxy_start() {
+    $DAEMON -f "$CONFIG" -D -p $PIDFILE $EXTRAOPTS
+    sleep 2
+    pidofproc -p $PIDFILE $DAEMON > /dev/null
+}
+
+haproxy_stop() {
+    pidofproc -p $PIDFILE $DAEMON > /dev/null && haproxy_reload
+    pidofproc -p $PIDFILE $DAEMON > /dev/null && killproc -p $PIDFILE $DAEMON -USR1
+    pidofproc -p $PIDFILE $DAEMON > /dev/null || killproc -p $PIDFILE $DAEMON
+}
+
+haproxy_reload() {
+    pidofproc -p $PIDFILE $DAEMON > /dev/null && killproc -p $PIDFILE $DAEMON -USR2
+    pidofproc -p $PIDFILE $DAEMON > /dev/null || return 2
+    return 0
+}
+
+haproxy_status() {
+    status_of_proc -p $PIDFILE $DAEMON haproxy
+}
+
+haproxy_configtest() {
+    $DAEMON -c -q -V -f "$CONFIG"
+    if [ $? -eq 0 ]; then
+        echo "Configuration file is valid"
+    else
+        echo "Error in configuration file, check with 'haproxy -c -f $CONFIG'"
+    fi
+}
+
+haproxy_force_reload() {
+    pidofproc -p $PIDFILE $DAEMON > /dev/null && killproc -p $PIDFILE $DAEMON -USR2
+    return 0
+}
+
+case "$1" in
+    start)
+        haproxy_start
+        ;;
+    stop)
+        haproxy_stop
+        ;;
+    reload|force-reload)
+        haproxy_reload
+        ;;
+    restart)
+        haproxy_stop
+        sleep 1
+        haproxy_start
+        ;;
+    status)
+        haproxy_status
+        ;;
+    configtest)
+        haproxy_configtest
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|reload|force-reload|restart|status|configtest}"
+        exit 1
+        ;;
+esac
+exit 0
+EOF
+
+# Make the script executable
+sudo chmod +x /etc/init.d/haproxy
+
+# Start and enable the HAProxy service
+sudo service haproxy start
+sudo systemctl enable haproxy
+
+# Print success message
+echo "HAProxy has been installed and configured successfully."
