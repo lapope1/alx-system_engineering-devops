@@ -1,18 +1,38 @@
-#!/usr/bin/env bash
-# write a Bash script that will display information about the subdomains
+#!/bin/bash
 
-dns_config () {
-    script=$(dig "$2"."$1" | grep -A1 'ANSWER SECTION:' | tr '\t' '\n' | tail -2 | tr '\n' ' ')
-    echo "$2 $script" | awk '{print "The subdomain " $1 " is a " $2 " record and points to " $3}'
+# Function to display information about a specific subdomain
+function display_subdomain_info() {
+  domain="$1"
+  subdomain="$2"
+
+  # Fetch the DNS records using dig and extract the relevant information with awk
+  record_type=$(dig +short "$subdomain.$domain" | awk '{print $4}')
+  destination=$(dig +short "$subdomain.$domain" | awk '{print $1}')
+
+  echo "The subdomain $subdomain is a $record_type record and points to $destination"
 }
 
-if [ "$#" == 1 ]
-then
-  dns_config "$1" "www"
-  dns_config "$1" "lb-01"
-  dns_config "$1" "web-01"
-  dns_config "$1" "web-02"
-elif [ "$#" == 2 ]
-then
-  dns_config "$1" "$2"
+# Function to display information for default subdomains (www, lb-01, web-01, web-02)
+function display_default_subdomains_info() {
+  domain="$1"
+  default_subdomains=("www" "lb-01" "web-01" "web-02")
+
+  for subdomain in "${default_subdomains[@]}"; do
+    display_subdomain_info "$domain" "$subdomain"
+  done
+}
+
+# Main script
+if [[ $# -eq 0 || $# -gt 2 ]]; then
+  echo "Usage: $0 {DOMAIN} [SUBDOMAIN]"
+  exit 1
+fi
+
+domain="$1"
+
+if [[ $# -eq 1 ]]; then
+  display_default_subdomains_info "$domain"
+else
+  subdomain="$2"
+  display_subdomain_info "$domain" "$subdomain"
 fi
