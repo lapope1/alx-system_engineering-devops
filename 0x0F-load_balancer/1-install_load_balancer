@@ -39,8 +39,8 @@ frontend 191941-web
 
 backend 191941-web_servers
     balance roundrobin
-    server web-01 34.207.227.3:80 check
-    server web-02 web-02 100.25.22.97:80 check
+    server web-01 3.86.7.18:80 check
+    server web-02 34.207.190.90:80 check
 
 EOF
 
