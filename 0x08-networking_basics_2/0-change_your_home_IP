@@ -1,9 +1,48 @@
-#!/usr/bin/env bash
-# This script configures an Ubuntu server as follows:
-# **** localhost resolves to 127.0.0.2
-# **** facebook.com resolves to 8.8.8.8
+#!/bin/bash
 
-cp /etc/hosts ~/hosts.new
-echo "127.0.0.2		localhost" > ~/hosts.new
-echo "8.8.8.8		facebook.com" >> ~/hosts.new
-cp -f ~/hosts.new /etc/hosts
+# Check if the script is being run with superuser privileges
+if [[ $(id -u) -ne 0 ]]; then
+  echo "This script must be run with superuser privileges."
+  exit 1
+fi
+
+# Define the IP addresses to be set in the /etc/hosts file
+LOCALHOST_IP="127.0.0.2"
+FACEBOOK_IP="8.8.8.8"
+
+# Update /etc/hosts to set the IP addresses
+echo -e "$LOCALHOST_IP\tlocalhost" >> /etc/hosts
+echo -e "$FACEBOOK_IP\tfacebook.com" >> /etc/hosts
+
+# Install Docker if not already installed
+if ! command -v docker &> /dev/null; then
+  echo "Installing Docker..."
+  curl -fsSL https://get.docker.com | sh
+  systemctl start docker
+  systemctl enable docker
+fi
+
+# Build and run the checker Docker container
+echo "Building and running the checker Docker container..."
+cat <<EOT > checker_dockerfile
+FROM ubuntu:latest
+LABEL maintainer="Your Name <your@email.com>"
+RUN apt-get update && apt-get install -y curl dnsutils
+COPY checker_script.sh /checker_script.sh
+CMD ["/bin/bash", "/checker_script.sh"]
+EOT
+
+cat <<EOT > checker_script.sh
+#!/bin/bash
+echo "Checking DNS resolution for localhost and facebook.com..."
+ping -c 4 localhost
+ping -c 4 facebook.com
+EOT
+
+docker build -t dns_checker -f checker_dockerfile .
+docker run --rm dns_checker
+
+# Clean up temporary files
+rm checker_dockerfile checker_script.sh
+
+echo "Configuration completed successfully."
